@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>وكيل محلل السوق الذكي</title>
+<style>
+:root {
+  --bg: #0d1421;
+  --card: #16203a;
+  --card2: #1c2947;
+  --border: #26354f;
+  --text: #e8eefc;
+  --muted: #93a4c3;
+  --pos: #22c55e;
+  --neg: #ef4444;
+  --neu: #94a3b8;
+  --gold: #f0b429;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  background: linear-gradient(160deg, #0d1421 0%, #101c33 100%);
+  color: var(--text);
+  min-height: 100vh;
+}
+header {
+  background: rgba(13,20,33,.9);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(6px);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; box-shadow: 0 4px 14px rgba(124,58,237,.4);
+}
+.brand h1 { font-size: 19px; font-weight: 700; }
+.brand small { color: var(--muted); font-size: 12px; display: block; }
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn {
+  border: none; cursor: pointer; border-radius: 10px;
+  padding: 9px 16px; font-size: 13px; font-weight: 600;
+  color: #fff; background: #2563eb; transition: .2s;
+}
+.btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.btn:disabled { opacity: .5; cursor: wait; }
+.btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.btn.gold { background: #7c3aed; }
+.net-info { font-size: 12px; color: var(--muted); }
+.net-info .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; }
+.dot.online { background: var(--pos); }
+.dot.offline { background: var(--neg); }
+main { padding: 22px; max-width: 1200px; margin: 0 auto; }
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px; margin-bottom: 20px;
+}
+.stat {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px;
+}
+.stat .num { font-size: 26px; font-weight: 800; margin-top: 4px; }
+.stat .lbl { color: var(--muted); font-size: 13px; }
+.stat.good { border-top: 3px solid var(--pos); }
+.stat.bad { border-top: 3px solid var(--neg); }
+.stat.neutral { border-top: 3px solid var(--neu); }
+.stat.senti { border-top: 3px solid var(--gold); }
+.toolbar {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;
+}
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab {
+  padding: 7px 14px; border-radius: 20px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  font-size: 13px; transition: .2s;
+}
+.tab.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+.tab[data-dir="ارتفاع"].active { background: var(--pos); border-color: var(--pos); color: #062a12; }
+.tab[data-dir="هبوط"].active { background: var(--neg); border-color: var(--neg); color: #2b0505; }
+select {
+  padding: 9px 12px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--card2); color: var(--text);
+  font-size: 13px; font-family: inherit;
+}
+select:focus { outline: none; border-color: #7c3aed; }
+.last-update { color: var(--muted); font-size: 12px; margin-inline-start: auto; }
+.list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 16px 18px; transition: .2s; display: flex; flex-direction: column; gap: 10px;
+}
+.card:hover { border-color: #3b4f77; transform: translateY(-1px); }
+.card.up { border-top: 3px solid var(--pos); }
+.card.down { border-top: 3px solid var(--neg); }
+.card.flat { border-top: 3px solid var(--neu); }
+.card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.comp { font-size: 15px; font-weight: 800; }
+.comp small { display: block; color: var(--muted); font-weight: 600; font-size: 12px; margin-top: 2px; }
+.direction {
+  padding: 5px 14px; border-radius: 20px; font-size: 14px; font-weight: 800; white-space: nowrap;
+}
+.direction.up { background: rgba(34,197,94,.15); color: var(--pos); }
+.direction.down { background: rgba(239,68,68,.15); color: var(--neg); }
+.direction.flat { background: rgba(148,163,184,.15); color: var(--neu); }
+.conf-row { display: flex; align-items: center; gap: 10px; }
+.conf-label { font-size: 12px; color: var(--muted); min-width: 58px; }
+.bar { flex: 1; height: 8px; border-radius: 10px; background: var(--card2); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 10px; }
+.conf-pct { font-size: 13px; font-weight: 700; min-width: 40px; text-align: left; }
+.score-row { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+.scorebar { flex: 1; height: 6px; border-radius: 10px; background: var(--card2); position: relative; }
+.scorebar .pospart { position: absolute; inset-inline-start: 50%; top: 0; bottom: 0; background: var(--pos); border-radius: 0 10px 10px 0; }
+.scorebar .negpart { position: absolute; inset-inline-start: 0; top: 0; bottom: 0; width: 50%; background: var(--neg); border-radius: 10px 0 0 10px; }
+.scorebar .marker { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #fff; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  background: var(--card2); border: 1px solid var(--border); color: var(--muted);
+}
+.chip.pos { color: var(--pos); border-color: rgba(34,197,94,.35); }
+.chip.neg { color: var(--neg); border-color: rgba(239,68,68,.35); }
+.reasons { display: flex; flex-direction: column; gap: 6px; }
+.reason {
+  font-size: 12px; color: var(--muted); line-height: 1.6;
+  border-right: 2px solid var(--border); padding-right: 8px;
+}
+.reason a { color: inherit; text-decoration: none; }
+.reason a:hover { color: var(--text); }
+.reason .s { font-size: 11px; opacity: .8; display: block; margin-top: 2px; }
+.empty { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; grid-column: 1 / -1; }
+footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px; line-height: 1.8; }
+@media (max-width: 640px) { .list { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">📊</div>
+    <div>
+      <h1>وكيل محلل السوق الذكي</h1>
+      <small>تحليل وضع شركات سوق تداول السعودي وتوقع اتجاه سهم كل شركة بناءً على أخبار آخر ٢٤ ساعة</small>
+    </div>
+  </div>
+  <div class="actions">
+    <span class="net-info" id="netInfo"><span class="dot offline" id="netDot"></span><span id="netText">جارٍ الاتصال بوكيل الأخبار...</span></span>
+    <button class="btn ghost" id="newsBtn" onclick="refreshNews()">🔄 جلب الأخبار</button>
+    <button class="btn gold" id="analyzeBtn" onclick="analyze()">🧠 تحليل الآن</button>
+  </div>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat neutral">
+      <div class="lbl">شركات محللة</div>
+      <div class="num" id="sCompanies">0</div>
+    </div>
+    <div class="stat good">
+      <div class="lbl">متوقع ارتفاع</div>
+      <div class="num" id="sUp">0</div>
+    </div>
+    <div class="stat bad">
+      <div class="lbl">متوقع هبوط</div>
+      <div class="num" id="sDown">0</div>
+    </div>
+    <div class="stat neutral">
+      <div class="lbl">استقرار متوقع</div>
+      <div class="num" id="sFlat">0</div>
+    </div>
+    <div class="stat senti">
+      <div class="lbl">معنويات السوق (الأخبار)</div>
+      <div class="num" id="sSenti">0%</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tabs" id="tabsDir">
+      <button class="tab active" data-dir="" onclick="setDir('')">الكل</button>
+      <button class="tab" data-dir="ارتفاع" onclick="setDir('ارتفاع')">🟢 ارتفاع</button>
+      <button class="tab" data-dir="هبوط" onclick="setDir('هبوط')">🔴 هبوط</button>
+      <button class="tab" data-dir="استقرار" onclick="setDir('استقرار')">⚪ استقرار</button>
+    </div>
+    <select id="sectorSel" onchange="setDir('')">
+      <option value="">كل القطاعات</option>
+    </select>
+    <span class="last-update" id="lastUpdate"></span>
+  </div>
+
+  <div class="list" id="list">
+    <div class="empty">جارٍ تحليل السوق...</div>
+  </div>
+</main>
+
+<footer>
+  التحليل مبني على تصنيف أخبار آخر ٢٤ ساعة ويُحدَّث تلقائيًا كل فترة. التوقعات استرشادية ولا تعتبر توصية استثمارية.
+</footer>
+
+<script>
+let cache = null;
+let curDir = "";
+let curSector = "";
+let timer = null;
+const $ = id => document.getElementById(id);
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    headers: { "Content-Type": "application/json" },
+    ...opts,
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || body.message || "خطأ في الطلب");
+  return body;
+}
+
+async function load() {
+  try {
+    const a = await api("/api/analysis");
+    cache = a;
+    render();
+    setNet(a.news_agent_connected ? "online" : "offline",
+      a.news_agent_connected ? "وكيل الأخبار متصل" : "وكيل الأخبار غير متصل");
+  } catch (e) {
+    setNet("offline", "لا يوجد تحليل بعد");
+    $("list").innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`;
+  }
+}
+
+function render() {
+  if (!cache) return;
+  const a = cache;
+  $("sCompanies").textContent = a.companies_count || 0;
+  $("sUp").textContent = a.up || 0;
+  $("sDown").textContent = a.down || 0;
+  $("sFlat").textContent = a.flat || 0;
+  $("sSenti").textContent = (a.market_sentiment >= 0 ? "+" : "") + a.market_sentiment + "%";
+  $("lastUpdate").textContent = a.generated_at ? "آخر تحليل: " + fmtDate(a.generated_at) : "";
+
+  const sectors = (a.sectors || []).map(s => s.sector);
+  const sel = $("sectorSel");
+  if (!sel.dataset.ready) {
+    sel.innerHTML = `<option value="">كل القطاعات</option>` +
+      sectors.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
+    sel.dataset.ready = "1";
+  }
+
+  let items = a.companies || [];
+  if (curDir) items = items.filter(c => c.direction === curDir);
+  if (curSector) items = items.filter(c => c.sector === curSector);
+
+  const list = $("list");
+  if (!items.length) {
+    list.innerHTML = `<div class="empty">لا توجد نتائج مطابقة.</div>`;
+    return;
+  }
+  list.innerHTML = items.map(cardHtml).join("");
+}
+
+function cardHtml(c) {
+  const dir = c.signal;
+  const arrow = dir === "up" ? "▲" : dir === "down" ? "▼" : "—";
+  const marker = (c.avg_score + 100) / 2;
+  const chips = [
+    `<span class="chip pos">▲ إيجابي ${c.pos}</span>`,
+    `<span class="chip neg">▼ سلبي ${c.neg}</span>`,
+    `<span class="chip">خبر ${c.news_count}</span>`,
+    c.strong ? `<span class="chip" style="color:var(--gold)">⭐ حاسم ${c.strong}</span>` : "",
+  ].join("");
+  const reasons = (c.reasons || []).map(r => {
+    const cat = r.category === "ايجابي" ? "pos" : r.category === "سلبي" ? "neg" : "";
+    const inner = r.url
+      ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a>`
+      : esc(r.title);
+    return `<div class="reason"><span class="chip ${cat}">${r.score >= 0 ? "+" : ""}${r.score}</span> ${inner}<span class="s">${esc(r.source || "")}</span></div>`;
+  }).join("");
+
+  return `
+  <div class="card ${dir}">
+    <div class="card-head">
+      <div class="comp">${esc(c.name)}<small>${esc(c.sector)}</small></div>
+      <div class="direction ${dir}">${arrow} ${esc(c.direction)}</div>
+    </div>
+    <div class="conf-row">
+      <span class="conf-label">الثقة</span>
+      <div class="bar"><i style="width:${c.confidence}%;background:${confColor(dir)}"></i></div>
+      <span class="conf-pct" style="color:${confColor(dir)}">${c.confidence}%</span>
+    </div>
+    <div class="score-row">
+      <span>الدرجة</span>
+      <div class="scorebar">
+        <div class="negpart"></div>
+        <div class="pospart" style="width:${(100 - marker)}%"></div>
+        <div class="marker" style="inset-inline-start:${marker}%"></div>
+      </div>
+      <span>${c.avg_score >= 0 ? "+" : ""}${c.avg_score}</span>
+    </div>
+    <div class="chips">${chips}</div>
+    <div class="reasons">${reasons}</div>
+  </div>`;
+}
+
+function confColor(dir) {
+  return dir === "up" ? "var(--pos)" : dir === "down" ? "var(--neg)" : "var(--neu)";
+}
+
+async function analyze() {
+  const btn = $("analyzeBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ جارٍ التحليل...";
+  try {
+    const r = await api("/api/analyze", { method: "POST" });
+    cache = r.analysis;
+    render();
+    setNet(r.analysis.news_agent_connected ? "online" : "offline",
+      r.analysis.news_agent_connected ? "وكيل الأخبار متصل" : "وكيل الأخبار غير متصل");
+  } catch (e) {
+    setNet("offline", e.message);
+    $("list").innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🧠 تحليل الآن";
+  }
+}
+
+async function refreshNews() {
+  const btn = $("newsBtn");
+  btn.disabled = true;
+  btn.textContent = "⏳ جارٍ الجلب...";
+  try {
+    const r = await api("/api/news/refresh", { method: "POST" });
+    setNet("online", "تم جلب " + (r.added || 0) + " خبر جديد");
+    await analyze();
+  } catch (e) {
+    setNet("offline", "فشل جلب الأخبار: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔄 جلب الأخبار";
+  }
+}
+
+function setDir(d) {
+  curDir = d;
+  document.querySelectorAll("#tabsDir .tab").forEach(t => t.classList.toggle("active", t.dataset.dir === d));
+  render();
+}
+
+const AR_MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+function fmtDate(iso) {
+  const t = new Date(iso);
+  if (isNaN(t)) return "";
+  const hh = String(t.getHours()).padStart(2, "0");
+  const mm = String(t.getMinutes()).padStart(2, "0");
+  return t.getDate() + " " + AR_MONTHS[t.getMonth()] + " " + t.getFullYear() + "، " + hh + ":" + mm;
+}
+
+function setNet(state, text) {
+  $("netDot").className = "dot " + state;
+  $("netText").textContent = text;
+}
+
+function esc(s) {
+  return String(s || "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+$("sectorSel").addEventListener("change", () => {
+  curSector = $("sectorSel").value;
+  render();
+});
+
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
